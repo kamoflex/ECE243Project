@@ -1,5 +1,6 @@
 _data:
-
+.equ Timer, 0xFF202000
+.equ PERIOD, 300000000
 .equ ADDR_VGA, 0x08000000
 .equ ADDR_CHAR, 0x09000000
 .equ MAX_X, 319
@@ -9,7 +10,7 @@ _data:
 .equ BOX_START_X, 15
 .equ BOX_START_Y, 150
 #.equ STACK, 0x3ffffffc #change stack address when using regular board and not simulator
-.equ STACK, 0x17fff80
+.equ STACK, 0x17fff80 #comment out when using DE1 board
 .global _start
 
 _start:
@@ -34,18 +35,79 @@ _start:
 
 
 	#br LoopForever
-	br Jump_1
+	br Jump_0
 
 LoopForever:
 	br LoopForever
 
 SuccessfulJump:
-	#Draw BackGround Buffer
+	call DRAW_BGRND				#Draw BackGround Buffer
 	#Generate new level (block layout)
-	#Reset block location
+	call BOX_SHADOW			#erases location of current block
+	call reset_coordinates
+	call DRAW_BOX			#Reset block location
 	br NewLevelCoords
 	
 
+Jump_0:							#When the user wants to move by 2 pixels to the right
+	#movi r14, 45
+	#movi r15, 22
+	#beq r12,r14, DONE_JUMP 			#checking if done jumping or nah
+	call BOX_SHADOW
+	#bge r15, r12, Jump_0_rise		#checks if x offset is in the first half of the jump or nah
+	addi r12,r12,1
+	#addi r13,r13,1
+	#br Jump_0_draws
+	
+	#Jump_0_rise:
+	#addi r12,r12,1					#if not then increments x
+	#subi r13,r13,1
+	
+	Jump_0_draws:
+	#call DRAW_BGRND				#draw background
+	#call DRAW_LEVEL				#draw same level 
+#	subi sp,sp, 56
+#	stw r2,  0(sp)
+#	stw r3,  4(sp)
+#	stw r4,  8(sp)
+#	stw r5, 12(sp)
+#	stw r6, 16(sp)
+#	stw r7, 20(sp)
+#	stw r8, 24(sp)
+#	stw r9, 28(sp)
+#	stw r10, 32(sp)
+#	stw r11, 36(sp)
+#	stw r12, 40(sp)
+#	stw r13, 44(sp)
+#	stw r14, 48(sp)
+#	stw r15, 52(sp)
+	call DRAW_BOX					#draw block
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+#	ldw r2,  0(sp)
+#	ldw r3,  4(sp)
+#	ldw r4,  8(sp)
+#	ldw r5, 12(sp)
+#	ldw r6, 16(sp)
+#	ldw r7, 20(sp)
+#	ldw r8, 24(sp)
+#	ldw r9, 28(sp)
+#	ldw r10, 32(sp)
+#	ldw r11, 36(sp)
+#	ldw r12, 40(sp)
+#	ldw r13, 44(sp)
+#	ldw r14, 48(sp)
+#	ldw r15, 52(sp)
+#	addi sp,sp, 56
+	br Jump_0
+	
+		
 	
 Jump_1:
 	movi r14, 45
@@ -104,6 +166,182 @@ Jump_1:
 #	ldw r15, 52(sp)
 #	addi sp,sp, 56
 	br Jump_1
+	
+Jump_2:
+	movi r14, 95
+	movi r15, 46
+	beq r12,r14, DONE_JUMP 			#checking if done jumping or nah
+	call BOX_SHADOW
+	bge r15, r12, Jump_2_rise		#checks if x offset is in the first half of the jump or nah
+	addi r12,r12,1
+	addi r13,r13,1
+	br Jump_2_draws
+	
+	Jump_2_rise:
+	addi r12,r12,1					#if not then increments x
+	subi r13,r13,1
+	
+	Jump_2_draws:
+	#call DRAW_BGRND				#draw background
+	#call DRAW_LEVEL				#draw same level 
+#	subi sp,sp, 56
+#	stw r2,  0(sp)
+#	stw r3,  4(sp)
+#	stw r4,  8(sp)
+#	stw r5, 12(sp)
+#	stw r6, 16(sp)
+#	stw r7, 20(sp)
+#	stw r8, 24(sp)
+#	stw r9, 28(sp)
+#	stw r10, 32(sp)
+#	stw r11, 36(sp)
+#	stw r12, 40(sp)
+#	stw r13, 44(sp)
+#	stw r14, 48(sp)
+#	stw r15, 52(sp)
+	call DRAW_BOX					#draw block
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+#	ldw r2,  0(sp)
+#	ldw r3,  4(sp)
+#	ldw r4,  8(sp)
+#	ldw r5, 12(sp)
+#	ldw r6, 16(sp)
+#	ldw r7, 20(sp)
+#	ldw r8, 24(sp)
+#	ldw r9, 28(sp)
+#	ldw r10, 32(sp)
+#	ldw r11, 36(sp)
+#	ldw r12, 40(sp)
+#	ldw r13, 44(sp)
+#	ldw r14, 48(sp)
+#	ldw r15, 52(sp)
+#	addi sp,sp, 56
+	br Jump_2
+	
+
+	Jump_3:
+	movi r14, 145
+	movi r15, 72
+	beq r12,r14, DONE_JUMP 			#checking if done jumping or nah
+	call BOX_SHADOW
+	bge r15, r12, Jump_3_rise		#checks if x offset is in the first half of the jump or nah
+	addi r12,r12,1
+	addi r13,r13,1
+	br Jump_3_draws
+	
+	Jump_3_rise:
+	addi r12,r12,1					#if not then increments x
+	subi r13,r13,1
+	
+	Jump_3_draws:
+	#call DRAW_BGRND				#draw background
+	#call DRAW_LEVEL				#draw same level 
+#	subi sp,sp, 56
+#	stw r2,  0(sp)
+#	stw r3,  4(sp)
+#	stw r4,  8(sp)
+#	stw r5, 12(sp)
+#	stw r6, 16(sp)
+#	stw r7, 20(sp)
+#	stw r8, 24(sp)
+#	stw r9, 28(sp)
+#	stw r10, 32(sp)
+#	stw r11, 36(sp)
+#	stw r12, 40(sp)
+#	stw r13, 44(sp)
+#	stw r14, 48(sp)
+#	stw r15, 52(sp)
+	call DRAW_BOX					#draw block
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+#	ldw r2,  0(sp)
+#	ldw r3,  4(sp)
+#	ldw r4,  8(sp)
+#	ldw r5, 12(sp)
+#	ldw r6, 16(sp)
+#	ldw r7, 20(sp)
+#	ldw r8, 24(sp)
+#	ldw r9, 28(sp)
+#	ldw r10, 32(sp)
+#	ldw r11, 36(sp)
+#	ldw r12, 40(sp)
+#	ldw r13, 44(sp)
+#	ldw r14, 48(sp)
+#	ldw r15, 52(sp)
+#	addi sp,sp, 56
+	br Jump_3
+	
+
+	Jump_4:
+	movi r14, 195
+	movi r15, 97
+	beq r12,r14, DONE_JUMP 			#checking if done jumping or nah
+	call BOX_SHADOW
+	bge r15, r12, Jump_4_rise		#checks if x offset is in the first half of the jump or nah
+	addi r12,r12,1
+	addi r13,r13,1
+	br Jump_4_draws
+	
+	Jump_4_rise:
+	addi r12,r12,1					#if not then increments x
+	subi r13,r13,1
+	
+	Jump_4_draws:
+	#call DRAW_BGRND				#draw background
+	#call DRAW_LEVEL				#draw same level 
+#	subi sp,sp, 56
+#	stw r2,  0(sp)
+#	stw r3,  4(sp)
+#	stw r4,  8(sp)
+#	stw r5, 12(sp)
+#	stw r6, 16(sp)
+#	stw r7, 20(sp)
+#	stw r8, 24(sp)
+#	stw r9, 28(sp)
+#	stw r10, 32(sp)
+#	stw r11, 36(sp)
+#	stw r12, 40(sp)
+#	stw r13, 44(sp)
+#	stw r14, 48(sp)
+#	stw r15, 52(sp)
+	call DRAW_BOX					#draw block
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+	call DRAW_BOX
+#	ldw r2,  0(sp)
+#	ldw r3,  4(sp)
+#	ldw r4,  8(sp)
+#	ldw r5, 12(sp)
+#	ldw r6, 16(sp)
+#	ldw r7, 20(sp)
+#	ldw r8, 24(sp)
+#	ldw r9, 28(sp)
+#	ldw r10, 32(sp)
+#	ldw r11, 36(sp)
+#	ldw r12, 40(sp)
+#	ldw r13, 44(sp)
+#	ldw r14, 48(sp)
+#	ldw r15, 52(sp)
+#	addi sp,sp, 56
+	br Jump_4
 	
 	
 	
@@ -366,3 +604,37 @@ BOX_SHADOW:
 		ldw r23, 64(sp)
 		addi sp, sp, 68
 	ret  
+	
+.section .exceptions, "ax"
+	TIMES_UP:
+
+	addi sp,sp, -8
+	rdctl et, ctl1
+	stw et, 0(sp)		
+	stw ea, 4(sp)	
+	rdctl et, ctl4	
+	andi et, et, 1	
+	beq et, r0, Timer_Interrupt
+
+		
+	Timer_Interrupt:
+	
+	xori r11, r11, 1	
+	movia et, LED	
+	stwio r11, 0(r10)	
+	movia et, Timer	
+	stwio r0, 0(et) # acknowledge timer	
+	movia et, 0x01	 #THIS IS THE PART THAT I REPLACE WITH THE BRANCHING TO APPROPRIATE JUMP
+	wrctl ctl0, et
+	
+	br Exit			#NEED TO REPLACE THIS BRANCH WITH THE JUMP STUFF
+	
+	Exit:	
+
+	ldw et, 0(sp)	
+	ldw ea, 4(sp)	
+	wrctl ctl1, et
+	addi sp, sp, 8	
+	subi ea, ea, 4	
+eret
+	
